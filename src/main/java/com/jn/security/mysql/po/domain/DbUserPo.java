@@ -1,12 +1,26 @@
-package com.jn.security.domain;
+package com.jn.security.mysql.po.domain;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Created by death on 2016/8/1.
  */
-public class DbUser {
+@SuppressWarnings("serial")
+@Entity
+@Table(name = "adm_admin")
+public class DbUserPo {
 
+    @Id
+    @Column(length = 40, nullable = false)
     private String username;
+
+    @Column(length = 40, nullable = false)
     private String password;
+
+
     private Integer access;
 
     //getter/setter

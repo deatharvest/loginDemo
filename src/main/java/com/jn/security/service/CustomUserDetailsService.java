@@ -4,9 +4,12 @@ package com.jn.security.service;
  * Created by death on 2016/8/1.
  */
 
-import com.jn.security.dao.UserDao;
-import com.jn.security.domain.DbUser;
+import com.jn.security.mysql.dao.UserRepository;
+import com.jn.security.mysql.po.domain.DbUserPo;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
@@ -14,6 +17,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,13 +28,15 @@ import java.util.List;
  * 一个自定义的service用来和数据库进行操作. 即以后我们要通过数据库保存权限.则需要我们继承UserDetailsService
  *
  * @author liukai
- *
  */
-public class CustomUserDetailsService implements UserDetailsService {
+@Service
+public class CustomUserDetailsService implements  UserDetailsService {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
+    private static final Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
-    private UserDao userDAO = new UserDao();
+
+    @Autowired
+    UserRepository userRepository;
 
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException, DataAccessException {
@@ -40,16 +47,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
             // 搜索数据库以匹配用户登录名.
             // 我们可以通过dao使用JDBC来访问数据库
-            DbUser dbUser = userDAO.getDatabase(username);
+            DbUserPo dbUserPo = userRepository.findOne(username);
 
-            // Populate the Spring User object with details from the dbUser
+            // Populate the Spring User object with details from the dbUserPo
             // Here we just pass the username, password, and access level
             // getAuthorities() will translate the access level to the correct
             // role type
 
-            user = new User(dbUser.getUsername(), dbUser.getPassword()
+            user = new User(dbUserPo.getUsername(), dbUserPo.getPassword()
                     .toLowerCase(), true, true, true, true,
-                    getAuthorities(dbUser.getAccess()));
+                    getAuthorities(dbUserPo.getAccess()));
 
         } catch (Exception e) {
             logger.error("Error in retrieving user");
